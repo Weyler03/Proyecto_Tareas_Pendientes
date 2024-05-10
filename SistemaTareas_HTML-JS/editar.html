@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <title>Sistema de Tareas</title>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+          <h1>Editar tarea</h1>
+        </div>
+        <div class="card-body">
+            <form id="formulario">
+                <div class="mb-3">
+                  <label  class="form-label">Nombre de la tarea</label>
+                  <input type="text" class="form-control" id="inptNombre">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Estado de tarea</label>
+                  <input type="text" class="form-control" id="inptStatus">
+                </div>
+                <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                <button onclick="location.href='index.html'" type="button" class="btn btn-warning">Volver a listar</button>
+              </form>
+        </div>
+     </div>
+    </div>
+</div>
+
+<!-- SECCION DE SCRIPTS -->
+   <script>
+    
+    //OBTENER ID DE TAREA
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTarea = urlParams.get('id');
+
+    //CARGAR NOMBRE Y ESTADO DE LA TAREA
+    const cargarDetallesTarea = () => {
+        fetch(`http://localhost:5050/api/Tareas/Obtener/${idTarea}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('La solicitud no pudo completarse');
+            }
+            return response.json();
+        })
+        .then(tarea => {
+            
+            document.getElementById('inptNombre').value = tarea.nombreTarea;
+            document.getElementById('inptStatus').value = tarea.estadoTarea;
+        })
+        .catch(error => console.error('Error al cargar los detalles de la tarea:', error));
+    };
+
+    window.addEventListener('DOMContentLoaded', cargarDetallesTarea);
+
+
+    //ACTUALIZAR LOS DATOS DE LA TAREA
+      document.getElementById('formulario').addEventListener('submit', function(event) {
+        event.preventDefault(); 
+
+        const nombreTarea = document.getElementById('inptNombre').value;
+        const estadoTarea = document.getElementById('inptStatus').value;
+
+        const datosEditar = {
+            nombreTarea: nombreTarea,
+            estadoTarea: estadoTarea
+        };
+
+        fetch(`http://localhost:5050/api/Tareas/Editar/${idTarea}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datosEditar)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('La solicitud no pudo completarse');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Edición exitosa:', data);
+            alert('¡La tarea se ha editado correctamente!');
+            window.location.href = 'index.html';
+        })
+        .catch(error => console.error('Error al editar la tarea:', error));
+    });
+   </script>
+</body>
+</html>

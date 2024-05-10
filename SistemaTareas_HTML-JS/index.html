@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Tareas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+</head>
+<body>
+    <div class="card mt-4 shadow-lg p-3 mb-5 bg-body rounded">
+        <div class="card-header">
+          <h1>Lista de Tareas</h1>
+        </div>
+        <div class="card-body">
+            <button onclick="location.href='crear.html'" type="button" class="btn btn-success btn-md" id="btnCrear"><i class="bi bi-plus-lg"></i> Nueva tarea</a></button>
+            <hr/>
+            <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th scope="col">Id Tarea</th>
+                    <th scope="col">Nombre Tarea</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody id="datatable">
+                </tbody>
+              </table>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- seccion de Scripts -->
+
+<script>
+
+    // LISTAR LAS TAREAS PENDIENTES
+    let url = 'http://localhost:5050/api/Tareas/Lista';
+    fetch(url)
+        .then(response => response.json()) 
+        .then(data => mostrarData(data)) 
+        .catch(error => console.log(error));
+
+        const mostrarData = (data) => {
+            console.log(data);
+            let body = '';
+            for (let i = 0; i < data.length; i++){
+                body += `<tr>
+                    <td>${data[i].idTareas}</td>
+                    <td>${data[i].nombreTarea}</td>
+                    <td>${data[i].estadoTarea}</td>
+                    <td>
+                        <button type="button" class="btn btn-success btn-md" onclick="completarTarea(${data[i].idTareas})"><i class="bi bi-list-check"></i> Completar tarea</button>
+                        <button type="button" class="btn btn-warning btn-sm" onclick="editarTarea(${data[i].idTareas})"><i class="bi bi-pencil"></i> Editar</button> 
+                        <button type="button" class="btn btn-danger btn-sm"  onclick="eliminarTarea(${data[i].idTareas})"><i class="bi bi-trash"></i> Eliminar</button>
+                    </td>
+                    </tr>`;
+            }
+            document.getElementById('datatable').innerHTML = body;
+        };
+
+        //LLAMAR EL ID DE LA TAREA
+        const editarTarea = (idTareas) => {
+        window.location.href = `editar.html?id=${idTareas}`;
+        };
+
+        //CAMBIAR ESTADO DE TAREA DE "NO COMPLETADO" A "COMPLETADO"
+        const completarTarea = (idTareas) => {
+        fetch(`http://localhost:5050/api/Tareas/Completar/${idTareas}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); 
+            location.reload();
+        })
+        .catch(error => console.error('Error al completar la tarea:', error));
+    };
+
+    //ELIMINAR TAREA
+    const eliminarTarea = (idTarea) => {
+            if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+                fetch(`http://localhost:5050/api/Tareas/Eliminar/${idTarea}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('La solicitud no pudo completarse');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Tarea eliminada:', data);
+                    alert('¡La tarea se ha eliminado correctamente!');
+                    location.reload();
+                })
+                .catch(error => console.error('Error al eliminar la tarea:', error));
+            }
+        };
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>      
+</body>
+</html>
